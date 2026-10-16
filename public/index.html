@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="NEXUS CONTROL — A futuristic dashboard featuring simulated system metrics."
+      content="NEXUS CONTROL — Read-only live server monitoring with a cinematic energy core."
     />
     <meta name="theme-color" content="#050a12" />
     <title>NEXUS CONTROL — Command Center</title>
@@ -654,6 +654,17 @@ h2 em {
   font-size: 1.3rem !important;
 }
 
+.metric-node .metric-detail {
+  margin-top: 0.3rem;
+  font-size: 0.62rem;
+  font-family: var(--font-mono);
+}
+
+body[data-monitor-state="offline"] .online-value { color: var(--orange); }
+body[data-monitor-state="live"] .demo-chip { color: #8affcf; border-color: #8affcf55; }
+body[data-monitor-state="live"] .demo-chip i,
+body[data-monitor-state="live"] .status-dot { background: #8affcf; box-shadow: 0 0 12px #8affcf66; }
+
 .stage-status {
   position: absolute;
   z-index: 5;
@@ -792,6 +803,7 @@ h2 em {
 }
 
 .console-ticker {
+  flex-wrap: wrap;
   display: flex;
   justify-content: space-between;
   gap: 1rem;
@@ -802,7 +814,7 @@ h2 em {
   font-family: var(--font-mono);
   font-size: 0.56rem;
   letter-spacing: 0.08em;
-  white-space: nowrap;
+  white-space: normal;
 }
 
 .system-radials {
@@ -1028,10 +1040,11 @@ h2 em {
   :root { --header-height: 82px; }
   .brand-copy small,
   .button-label { display: none; }
-  .site-header { grid-template-columns: 1fr auto; }
+  /* A filtered header traps fixed navigation over the LIVE/OFFLINE badge. */
+  .site-header { grid-template-columns: 1fr auto; backdrop-filter: none; }
   .main-nav { position: fixed; inset: auto 1rem 1rem; z-index: 40; height: 58px; justify-content: space-around; border: 1px solid var(--line); background: rgba(5, 11, 19, 0.88); backdrop-filter: blur(16px); }
   .main-nav a { padding-inline: 1.5rem; }
-  .header-actions { display: none; }
+  .header-actions .icon-button { display: none; }
   .command-stage { margin-block-start: 0; }
   .core-interaction { width: min(62vw, 580px); }
   .metric-cpu { inset-inline-start: 1%; }
@@ -1120,7 +1133,7 @@ body.motion-paused *::after {
 /* NEXUS_CSS_END */
     </style>
   </head>
-  <body>
+  <body data-monitor-state="offline">
     <a class="skip-link" href="#main-content">Skip to content</a>
     <canvas id="ambient-canvas" class="ambient-canvas" aria-hidden="true"></canvas>
     <div class="noise" aria-hidden="true"></div>
@@ -1142,7 +1155,7 @@ body.motion-paused *::after {
       </nav>
 
       <div class="header-actions">
-        <span class="demo-chip"><i aria-hidden="true"></i> Demo Data</span>
+        <span class="demo-chip" role="status"><i aria-hidden="true"></i> <span id="monitor-status">OFFLINE</span></span>
         <button id="motion-toggle" class="icon-button" type="button" aria-pressed="false">
           <span class="motion-icon" aria-hidden="true"></span>
           <span class="button-label">Pause Motion</span>
@@ -1153,7 +1166,7 @@ body.motion-paused *::after {
     <main id="main-content">
       <section id="command" class="hero-section observable" aria-labelledby="hero-title">
         <div class="hero-intro">
-          <p class="eyebrow"><span>PHASE 01</span> / SIMULATION CHANNEL ACTIVE</p>
+          <p class="eyebrow"><span>PHASE 02</span> / READ-ONLY MONITORING</p>
           <h1 id="hero-title">Control begins at the <em>Core.</em></h1>
           <p class="hero-copy">
             A unified view of system activity expressed through light and motion. Move your pointer around the core,
@@ -1161,7 +1174,7 @@ body.motion-paused *::after {
           </p>
         </div>
 
-        <div class="command-stage" aria-label="Interactive visualization of simulated system status">
+        <div class="command-stage" aria-label="Server metrics surrounding a decorative energy core">
           <div class="stage-grid" aria-hidden="true"></div>
           <p class="coordinate coordinate-a" aria-hidden="true">NX–01 / 24.7136° N</p>
           <p class="coordinate coordinate-b" aria-hidden="true">CORE.SIMULATION / ACTIVE</p>
@@ -1170,7 +1183,7 @@ body.motion-paused *::after {
             <span class="metric-index">01</span>
             <div>
               <small>CPU</small>
-              <strong><b data-value="38">38</b><sup>%</sup></strong>
+              <strong><b id="cpu-metric">--</b><sup>%</sup></strong>
             </div>
             <span class="metric-line" aria-hidden="true"></span>
           </div>
@@ -1179,7 +1192,8 @@ body.motion-paused *::after {
             <span class="metric-index">02</span>
             <div>
               <small>Memory</small>
-              <strong><b data-value="64">64</b><sup>%</sup></strong>
+              <strong><b id="ram-metric">--</b><sup>%</sup></strong>
+              <small class="metric-detail" id="memory-capacity">Unavailable</small>
             </div>
             <span class="metric-line" aria-hidden="true"></span>
           </div>
@@ -1188,7 +1202,8 @@ body.motion-paused *::after {
             <span class="metric-index">03</span>
             <div>
               <small>Storage</small>
-              <strong><b data-value="41">41</b><sup>%</sup></strong>
+              <strong><b id="disk-metric">--</b><sup>%</sup></strong>
+              <small class="metric-detail" id="disk-capacity">Unavailable</small>
             </div>
             <span class="metric-line" aria-hidden="true"></span>
           </div>
@@ -1196,8 +1211,8 @@ body.motion-paused *::after {
           <div class="metric-node metric-status">
             <span class="metric-index">04</span>
             <div>
-              <small>Server Status</small>
-              <strong class="online-value">Stable</strong>
+              <small>Metrics Status</small>
+              <strong class="online-value" id="server-status">OFFLINE</strong>
             </div>
             <span class="metric-line" aria-hidden="true"></span>
           </div>
@@ -1213,13 +1228,13 @@ body.motion-paused *::after {
             <div class="core-label">
               <span>Core Energy</span>
               <strong>92.4</strong>
-              <small>SIMULATED / SYNCED</small>
+              <small>DEMO VISUAL / NOT A METRIC</small>
             </div>
           </div>
 
           <div class="stage-status">
             <span class="status-dot" aria-hidden="true"></span>
-            <p><small>Last simulated sync</small><strong id="simulation-time">Just now</strong></p>
+            <p><small>Last server sample</small><strong id="server-time">--</strong></p>
           </div>
         </div>
 
@@ -1235,8 +1250,8 @@ body.motion-paused *::after {
             <h2 id="telemetry-title">System rhythms,<br /><em>visualized.</em></h2>
           </div>
           <p>
-            A synthetic stream simulates CPU and memory activity over the last sixty seconds.
-            No real server data is accessed in this version.
+            Real CPU and memory samples arrive approximately every five seconds.
+            Readings clear when monitoring is unavailable. The energy core is a decorative demo visual.
           </p>
         </div>
 
@@ -1245,38 +1260,39 @@ body.motion-paused *::after {
             <div>
               <span class="signal-swatch cpu-swatch"></span>
               <small>CPU Signal</small>
-              <strong><b id="cpu-live">38</b>%</strong>
+              <strong><b id="cpu-live">--</b>%</strong>
             </div>
             <div>
               <span class="signal-swatch ram-swatch"></span>
               <small>Memory Signal</small>
-              <strong><b id="ram-live">64</b>%</strong>
+              <strong><b id="ram-live">--</b>%</strong>
             </div>
-            <p><span>60</span> seconds / demo stream</p>
+            <p><span>60</span> samples / ~5s polling</p>
           </div>
           <div class="chart-wrap">
-            <canvas id="signal-chart" aria-label="Demo chart of CPU and memory activity"></canvas>
+            <canvas id="signal-chart" aria-label="CPU and memory chart unavailable"></canvas>
             <div class="chart-axis" aria-hidden="true"><span>100</span><span>75</span><span>50</span><span>25</span><span>0</span></div>
           </div>
-          <div class="console-ticker" aria-hidden="true">
-            <span>SIM/CORE: STABLE</span><span>PACKETS: 1,284</span><span>LATENCY: 18MS</span><span>UPLINK: NOMINAL</span>
+          <div class="console-ticker">
+            <span id="monitor-message">Metrics unavailable — no simulated readings</span>
+            <span>UPTIME: <span id="server-uptime">--</span></span><span>DISK: ROOT FILESYSTEM</span>
           </div>
         </div>
 
         <div class="system-radials" aria-label="Additional simulated indicators">
           <article style="--value: 72; --delay: 0ms">
             <div class="radial"><span>72<sup>%</sup></span></div>
-            <h3>Network Health</h3>
+            <h3>Network Health · DEMO</h3>
             <p>Connection paths are operating within the simulated range.</p>
           </article>
           <article style="--value: 89; --delay: 120ms">
             <div class="radial"><span>89<sup>%</sup></span></div>
-            <h3>Power Balance</h3>
+            <h3>Power Balance · DEMO</h3>
             <p>Simulated power distribution is stable across core units.</p>
           </article>
           <article style="--value: 96; --delay: 240ms">
             <div class="radial"><span>96<sup>%</sup></span></div>
-            <h3>Signal Integrity</h3>
+            <h3>Signal Integrity · DEMO</h3>
             <p>No interruptions in the current demo scenario.</p>
           </article>
         </div>
@@ -1293,14 +1309,14 @@ body.motion-paused *::after {
           <p class="eyebrow"><span>PHASE 03</span> / SCOPE & SAFETY</p>
           <h2 id="protocol-title">Secure protocol.<br /><em>Visibility without control.</em></h2>
           <p class="protocol-lead">
-            This interface is a phase-one visual prototype showing simulated scenarios only.
-            It executes no commands and does not connect to real server metrics.
+            Phase two provides read-only CPU, memory, root disk and uptime monitoring.
+            It executes no management commands. Decorative demo visuals are not server measurements.
           </p>
 
           <ol class="protocol-list">
             <li>
               <span>01</span>
-              <div><h3>Local Simulation</h3><p>Values change locally in the browser for demonstration only.</p></div>
+              <div><h3>Live Monitoring</h3><p>Only validated server samples are shown as LIVE. Missing data is marked OFFLINE.</p></div>
               <i aria-hidden="true"></i>
             </li>
             <li>
@@ -1310,7 +1326,7 @@ body.motion-paused *::after {
             </li>
             <li>
               <span>03</span>
-              <div><h3>Ready to Expand</h3><p>A visual foundation for future phases after review.</p></div>
+              <div><h3>Public Utilization</h3><p>Aggregate utilization is public. An authentication layer is recommended for a future phase.</p></div>
               <i aria-hidden="true"></i>
             </li>
           </ol>
@@ -1321,12 +1337,119 @@ body.motion-paused *::after {
     </main>
 
     <footer class="site-footer">
-      <p><strong>NEXUS CONTROL</strong> / PHASE 01</p>
-      <p>Exploratory interface — all displayed readings are simulated demo data.</p>
+      <p><strong>NEXUS CONTROL</strong> / PHASE 02</p>
+      <p>Read-only server monitoring. Energy core and secondary gauges are demo visuals.</p>
       <p dir="ltr">© 2026 / SYSTEM VISION</p>
     </footer>
     <script>
 // NEXUS_JS_START
+// Shared polling and validation logic; embedded before app.js in index.html.
+((global) => {
+  "use strict";
+  const POLL_MS = 5000;
+  const TIMEOUT_MS = 4000;
+
+  function validateMetrics(value, now = Date.now()) {
+    const percent = (n) => typeof n === "number" && Number.isFinite(n) && n >= 0 && n <= 100;
+    const capacity = (v) => v && percent(v.percent)
+      && Number.isSafeInteger(v.total_bytes) && v.total_bytes > 0
+      && Number.isSafeInteger(v.used_bytes) && v.used_bytes >= 0 && v.used_bytes <= v.total_bytes
+      && Math.abs(v.percent - 100 * v.used_bytes / v.total_bytes) <= 0.11;
+    if (!value || !percent(value.cpu_percent) || !capacity(value.memory) || !capacity(value.disk)
+      || typeof value.uptime_seconds !== "number" || !Number.isFinite(value.uptime_seconds)
+      || value.uptime_seconds < 0 || typeof value.timestamp !== "string") {
+      throw new Error("Invalid metrics");
+    }
+    const timestamp = Date.parse(value.timestamp);
+    if (!Number.isFinite(timestamp) || Math.abs(now - timestamp) > 60000) {
+      throw new Error("Stale or invalid server timestamp");
+    }
+    return value;
+  }
+
+  function createMonitor({ onData, onState, fetchImpl = global.fetch.bind(global),
+    visibility = global.document, schedule = global.setTimeout.bind(global),
+    cancel = global.clearTimeout.bind(global), now = () => Date.now() }) {
+    let running = false;
+    let generation = 0;
+    let nextPoll;
+    let active;
+
+    function suspend() {
+      generation += 1;
+      cancel(nextPoll);
+      if (active) {
+        active.controller.abort();
+        active.reject(new Error("Suspended"));
+      }
+      active = null;
+    }
+
+    async function poll() {
+      if (!running || visibility.hidden || active) return;
+      const current = generation;
+      const controller = new AbortController();
+      let deadline;
+      const interrupted = new Promise((_, reject) => {
+        active = { controller, reject };
+        deadline = schedule(() => {
+          controller.abort();
+          reject(new Error("Metrics request timed out"));
+        }, TIMEOUT_MS);
+      });
+      try {
+        const request = (async () => {
+          const response = await fetchImpl("/api/metrics", {
+            signal: controller.signal, cache: "no-store", headers: { Accept: "application/json" },
+          });
+          if (!response.ok || !response.headers.get("content-type")?.includes("application/json")) {
+            throw new Error("Metrics endpoint unavailable");
+          }
+          return validateMetrics(await response.json(), now());
+        })();
+        const metrics = await Promise.race([request, interrupted]);
+        if (running && current === generation && !visibility.hidden) {
+          onData(metrics);
+          onState("live");
+        }
+      } catch (_) {
+        if (running && current === generation && !visibility.hidden) onState("offline");
+      } finally {
+        cancel(deadline);
+        if (current === generation) {
+          active = null;
+          if (running && !visibility.hidden) nextPoll = schedule(poll, POLL_MS);
+        }
+      }
+    }
+
+    function visibilityChanged() {
+      suspend();
+      onState("offline");
+      if (!visibility.hidden) poll();
+    }
+
+    return {
+      start() {
+        if (running) return;
+        running = true;
+        onState("offline");
+        visibility.addEventListener("visibilitychange", visibilityChanged);
+        poll();
+      },
+      stop() {
+        running = false;
+        suspend();
+        visibility.removeEventListener("visibilitychange", visibilityChanged);
+      },
+    };
+  }
+
+  const api = { validateMetrics, createMonitor, POLL_MS, TIMEOUT_MS };
+  if (typeof module !== "undefined" && module.exports) module.exports = api;
+  else global.NexusMonitoring = api;
+})(globalThis);
+
 (() => {
   "use strict";
 
@@ -1638,17 +1761,14 @@ body.motion-paused *::after {
     coreContext.shadowBlur = 0;
   }
 
-  // Simulated telemetry chart.
+  // Real telemetry only. Decorative orb/particles are independent of monitoring.
   const chartCanvas = document.querySelector("#signal-chart");
   const chartContext = chartCanvas?.getContext("2d");
   const cpuValue = document.querySelector("#cpu-live");
   const ramValue = document.querySelector("#ram-live");
-  const cpuMetric = document.querySelector('[data-value="38"]');
-  const ramMetric = document.querySelector('[data-value="64"]');
-  const data = {
-    cpu: Array.from({ length: 60 }, (_, index) => 34 + Math.sin(index * 0.42) * 9 + Math.random() * 7),
-    ram: Array.from({ length: 60 }, (_, index) => 61 + Math.sin(index * 0.18 + 1.3) * 5 + Math.random() * 3),
-  };
+  const cpuMetric = document.querySelector('#cpu-metric');
+  const ramMetric = document.querySelector('#ram-metric');
+  const data = { cpu: [], ram: [] };
   let chartWidth = 0;
   let chartHeight = 0;
   let chartDpr = 1;
@@ -1670,7 +1790,7 @@ body.motion-paused *::after {
     const usableWidth = chartWidth - padding * 2;
     const usableHeight = chartHeight - padding * 2;
     const points = values.map((value, index) => ({
-      x: padding + (index / (values.length - 1)) * usableWidth,
+      x: padding + ((60 - values.length + index) / 59) * usableWidth,
       y: padding + (1 - value / 100) * usableHeight,
     }));
     const path = new Path2D();
@@ -1685,7 +1805,7 @@ body.motion-paused *::after {
   }
 
   function drawSeries(values, color, glow, fill) {
-    if (!chartContext) return;
+    if (!chartContext || !values.length) return;
     const { path, points } = linePath(values);
     chartContext.save();
     chartContext.strokeStyle = color;
@@ -1720,39 +1840,53 @@ body.motion-paused *::after {
     drawSeries(data.cpu, "rgba(89, 222, 255, 0.95)", "#42d9ff", "rgba(66, 217, 255, 0.085)");
   }
 
-  function tickSimulation() {
-    if (userPaused || document.hidden) return;
-    const previousCpu = data.cpu.at(-1);
-    const previousRam = data.ram.at(-1);
-    const nextCpu = Math.max(18, Math.min(78, previousCpu + (Math.random() - 0.48) * 9));
-    const nextRam = Math.max(46, Math.min(82, previousRam + (Math.random() - 0.5) * 3.5));
-    data.cpu.push(nextCpu);
-    data.cpu.shift();
-    data.ram.push(nextRam);
-    data.ram.shift();
-    const cpuRounded = Math.round(nextCpu);
-    const ramRounded = Math.round(nextRam);
-    if (cpuValue) cpuValue.textContent = cpuRounded;
-    if (ramValue) ramValue.textContent = ramRounded;
-    if (cpuMetric) cpuMetric.textContent = cpuRounded;
-    if (ramMetric) ramMetric.textContent = ramRounded;
-    drawChart();
+  function setText(selector, value) {
+    const element = document.querySelector(selector);
+    if (element) element.textContent = value;
   }
 
-  setInterval(tickSimulation, 1400);
-
-  const simulationTime = document.querySelector("#simulation-time");
-  function updateClock() {
-    if (!simulationTime) return;
-    simulationTime.textContent = new Intl.DateTimeFormat("en-GB", {
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-      hour12: false,
-    }).format(new Date());
+  function capacityText(value) {
+    const gib = (bytes) => (bytes / 1024 ** 3).toFixed(1);
+    return `${gib(value.used_bytes)} / ${gib(value.total_bytes)} GiB`;
   }
-  updateClock();
-  setInterval(updateClock, 1000);
+
+  const monitor = NexusMonitoring.createMonitor({
+    onData(metrics) {
+      const cpu = metrics.cpu_percent.toFixed(1);
+      const ram = metrics.memory.percent.toFixed(1);
+      if (cpuValue) cpuValue.textContent = cpu;
+      if (cpuMetric) cpuMetric.textContent = cpu;
+      if (ramValue) ramValue.textContent = ram;
+      if (ramMetric) ramMetric.textContent = ram;
+      setText('#disk-metric', metrics.disk.percent.toFixed(1));
+      setText('#memory-capacity', capacityText(metrics.memory));
+      setText('#disk-capacity', capacityText(metrics.disk));
+      const seconds = Math.floor(metrics.uptime_seconds);
+      setText('#server-uptime', `${Math.floor(seconds / 86400)}d ${Math.floor(seconds % 86400 / 3600)}h ${Math.floor(seconds % 3600 / 60)}m`);
+      setText('#server-time', new Date(metrics.timestamp).toISOString().slice(11, 19) + ' UTC');
+      data.cpu.push(metrics.cpu_percent);
+      data.ram.push(metrics.memory.percent);
+      if (data.cpu.length > 60) { data.cpu.shift(); data.ram.shift(); }
+      drawChart();
+    },
+    onState(status) {
+      body.dataset.monitorState = status;
+      setText('#monitor-status', status.toUpperCase());
+      setText('#server-status', status.toUpperCase());
+      setText('#monitor-message', status === 'live' ? 'Read-only server metrics' : 'Metrics unavailable — no simulated readings');
+      chartCanvas?.setAttribute('aria-label', status === 'live'
+        ? 'Live CPU and memory usage, up to 60 samples at approximately five-second intervals'
+        : 'CPU and memory chart unavailable');
+      if (status !== 'live') {
+        ['#cpu-live', '#ram-live', '#cpu-metric', '#ram-metric', '#disk-metric', '#server-uptime', '#server-time']
+          .forEach((selector) => setText(selector, '--'));
+        ['#memory-capacity', '#disk-capacity'].forEach((selector) => setText(selector, 'Unavailable'));
+        data.cpu.length = 0;
+        data.ram.length = 0;
+        drawChart();
+      }
+    },
+  });
 
   const sections = [...document.querySelectorAll(".observable")];
   const navLinks = [...document.querySelectorAll(".main-nav a")];
@@ -1791,6 +1925,9 @@ body.motion-paused *::after {
   resizeAmbient();
   resizeChart();
   requestAnimationFrame(renderFrame);
+  monitor.start();
+  window.addEventListener('pagehide', () => monitor.stop());
+  window.addEventListener('pageshow', () => monitor.start());
 })();
 // NEXUS_JS_END
     </script>
