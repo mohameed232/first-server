@@ -30,7 +30,7 @@ def test_health():
 def test_public_interface_assets_are_present():
     index = (PUBLIC_DIR / "index.html").read_text(encoding="utf-8")
 
-    assert '<html lang="ar" dir="rtl">' in index
-    assert "بيانات تجريبية" in index
+    assert '<html lang="en" dir="ltr">' in index
+    assert "Demo Data" in index
     assert (PUBLIC_DIR / "styles.css").is_file()
     assert (PUBLIC_DIR / "app.js").is_file()
