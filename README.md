@@ -1,69 +1,56 @@
-# NEXUS CONTROL — المرحلة الأولى
+# NEXUS CONTROL — phase one
 
-تجربة عربية تفاعلية لمركز قيادة مستقبلي، مع إبقاء تطبيق FastAPI الحالي ومساريه كما هما. الواجهة في هذه المرحلة عرض بصري فقط؛ جميع القياسات التي تظهر فيها **بيانات تجريبية مولّدة داخل المتصفح**، ولا يوجد اتصال بمقاييس الخادم أو تنفيذ أوامر أو تسجيل دخول.
+NEXUS CONTROL is an English, left-to-right visual demo of a futuristic command center. All readings are simulated in the browser. The existing FastAPI app remains separate from the static interface.
 
-## الواجهة
+## Static website
 
-توجد الملفات الثابتة المخصصة لإعداد Nginx في مجلد `public/`:
+Nginx serves `public/index.html` from `/var/www/html/public` on the VPS. The editable style and animation sources are `public/styles.css` and `public/app.js`. A reported production asset response was the same size as `index.html`, indicating an HTML fallback at the asset URL. `public/index.html` embeds both sources so the page does not depend on separate CSS or JavaScript requests.
 
-- `public/index.html`: بنية عربية كاملة باتجاه RTL ومناطق العرض الثلاث.
-- `public/styles.css`: الهوية البصرية، التجاوب، الحلقات والانتقالات، ودعم `prefers-reduced-motion`.
-- `public/app.js`: كرة الطاقة النقطية، الجسيمات، تفاعل المؤشر واللمس، والمخطط التجريبي باستخدام Canvas فقط.
-
-لا تستخدم الواجهة إطار JavaScript أو مكتبة 3D، ولا تحتاج إلى عملية build. يمكن معاينتها محليًا من جذر المستودع:
+After changing either source file, regenerate and check the served page:
 
 ```bash
-python -m http.server 8000 --directory public
+python3 scripts/build_public.py
+python3 scripts/build_public.py --check
+node --check public/app.js
 ```
 
-ثم افتح `http://127.0.0.1:8000`. زر «إيقاف الحركة» متاح على الشاشات الكبيرة، كما تُحترم إعدادات النظام لتقليل الحركة تلقائيًا.
+Commit the generated `public/index.html` along with the edited source file. This is a buildless static site with no 3D library or runtime dependency. It supports pointer and touch interaction, responsive layouts, and `prefers-reduced-motion`.
 
-> ملف `index.html` الموجود في جذر المستودع ملف قديم ومحفوظ لتجنّب تغيير أي مسار نشر سابق. نسخة NEXUS CONTROL المعتمدة لهذه المرحلة هي `public/index.html`.
+For local viewing, open `public/index.html` directly or run:
+
+```bash
+python3 -m http.server 8000 --directory public
+```
+
+## Deployment verification
+
+An HTTP 200 alone does not prove that an asset was served: an Nginx fallback can return the HTML page at a CSS or JavaScript URL. After updating the VPS, verify the response at `/` against the deployed file:
+
+```bash
+curl --fail --silent --show-error --max-time 15 -H 'Accept-Encoding: identity' http://127.0.0.1/ | cmp - public/index.html
+```
+
+Keep any Nginx configuration fixes and VPS operations separate from this repository. The original root-level `index.html` remains untouched.
 
 ## FastAPI
 
-يُنصح باستخدام Python 3.12. لم يتغير عقد الـ API في هذه المرحلة.
-
-## الإعداد
-
-نفّذ من مجلد المستودع:
+Python 3.12 is recommended. Install and run the unchanged API from the repository root:
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install -r requirements.txt
-```
-
-## التشغيل المحلي
-
-```bash
 python -m uvicorn main:app --reload --host 127.0.0.1 --port 8001
 ```
 
-المنفذ 8001 يتجنب التعارض مع خادم معاينة الواجهة الثابتة على 8000.
-
-| المسار | الاستجابة |
+| Route | Response |
 | --- | --- |
 | `GET /` | `{"message": "مرحبًا بك في أول تطبيق FastAPI!"}` |
 | `GET /health` | `{"status": "ok"}` |
-| `GET /docs` | توثيق تفاعلي لتجربة API |
+| `GET /docs` | Interactive API documentation |
 
-للتحقق محليًا: `curl http://127.0.0.1:8001/health`. تطبيق FastAPI لا يقدّم مجلد `public` بنفسه؛ يبقى تقديمه مسؤولية Nginx الحالي، ولم تُضف أو تُعدّل أي إعدادات Nginx أو systemd في هذا المستودع.
-
-## الاختبارات
-
-بعد تفعيل البيئة الافتراضية وتثبيت المتطلبات:
+Run the tests with:
 
 ```bash
 python -m pytest -q
 ```
-
-تشمل المتطلبات أدوات التشغيل والاختبار. تتحقق الاختبارات من بقاء مساري `GET /` و`GET /health` ومحتوى استجابتيهما، ومن وجود أصول الواجهة واتجاهها العربي ووسم البيانات التجريبية.
-
-يمكن كذلك فحص JavaScript دون تنفيذ المتصفح:
-
-```bash
-node --check public/app.js
-```
-
-هذه تعليمات تطوير محلي فقط، ولا تتضمن نشرًا أو تغييرات على إعدادات VPS.
