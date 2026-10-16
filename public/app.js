@@ -132,6 +132,8 @@
   const coreContext = coreCanvas?.getContext("2d");
   const spherePoints = [];
   const pointCount = 520;
+  let coreRotation = 0;
+  let previousCoreTime = 0;
 
   for (let index = 0; index < pointCount; index += 1) {
     const y = 1 - (index / (pointCount - 1)) * 2;
@@ -166,17 +168,22 @@
     const height = coreCanvas.height;
     const centerX = width / 2;
     const centerY = height / 2;
-    const radius = width * 0.245;
-    const rotation = time * 0.00013;
+    const radius = width * 0.25;
+    const elapsed = previousCoreTime ? Math.min(time - previousCoreTime, 34) : 16.67;
+    previousCoreTime = time;
+    if (motionIsActive()) coreRotation += elapsed * 0.00012;
+    const rotation = coreRotation;
+    const pulse = 1 + Math.sin(rotation * 7.5) * 0.018;
     const tiltX = state.pointerY * 0.18 - 0.18;
     const tiltY = rotation + state.pointerX * 0.25;
 
     coreContext.clearRect(0, 0, width, height);
 
-    const halo = coreContext.createRadialGradient(centerX, centerY, radius * 0.2, centerX, centerY, radius * 1.7);
-    halo.addColorStop(0, "rgba(180, 245, 255, 0.22)");
-    halo.addColorStop(0.28, "rgba(35, 157, 255, 0.13)");
-    halo.addColorStop(0.65, "rgba(18, 107, 255, 0.04)");
+    const halo = coreContext.createRadialGradient(centerX, centerY, radius * 0.08, centerX, centerY, radius * 1.82);
+    halo.addColorStop(0, "rgba(214, 251, 255, 0.26)");
+    halo.addColorStop(0.2, "rgba(67, 211, 255, 0.17)");
+    halo.addColorStop(0.46, "rgba(18, 107, 255, 0.09)");
+    halo.addColorStop(0.72, "rgba(8, 69, 160, 0.025)");
     halo.addColorStop(1, "rgba(18, 107, 255, 0)");
     coreContext.fillStyle = halo;
     coreContext.fillRect(0, 0, width, height);
@@ -187,21 +194,22 @@
       radius * 0.04,
       centerX,
       centerY,
-      radius * 1.06,
+      radius * 1.08,
     );
-    sphere.addColorStop(0, "rgba(210, 250, 255, 0.92)");
-    sphere.addColorStop(0.08, "rgba(72, 219, 255, 0.72)");
-    sphere.addColorStop(0.35, "rgba(20, 108, 211, 0.35)");
-    sphere.addColorStop(0.72, "rgba(4, 34, 66, 0.78)");
-    sphere.addColorStop(1, "rgba(1, 10, 20, 0.97)");
+    sphere.addColorStop(0, "rgba(226, 253, 255, 0.97)");
+    sphere.addColorStop(0.07, "rgba(91, 228, 255, 0.78)");
+    sphere.addColorStop(0.28, "rgba(26, 126, 231, 0.46)");
+    sphere.addColorStop(0.58, "rgba(6, 52, 103, 0.72)");
+    sphere.addColorStop(0.84, "rgba(2, 20, 41, 0.94)");
+    sphere.addColorStop(1, "rgba(0, 7, 15, 0.99)");
     coreContext.beginPath();
-    coreContext.arc(centerX, centerY, radius, 0, Math.PI * 2);
+    coreContext.arc(centerX, centerY, radius * pulse, 0, Math.PI * 2);
     coreContext.fillStyle = sphere;
     coreContext.fill();
 
     coreContext.save();
     coreContext.beginPath();
-    coreContext.arc(centerX, centerY, radius, 0, Math.PI * 2);
+    coreContext.arc(centerX, centerY, radius * pulse, 0, Math.PI * 2);
     coreContext.clip();
     const ordered = spherePoints
       .map((point) => ({ point, rotated: rotatePoint(point, tiltY, tiltX) }))
@@ -211,8 +219,8 @@
       const depth = (rotated.z + 1) / 2;
       const x = centerX + rotated.x * radius;
       const y = centerY + rotated.y * radius;
-      const alpha = 0.12 + depth * 0.72;
-      const size = point.size + depth * 1.45;
+      const alpha = 0.08 + depth * 0.76;
+      const size = point.size * 0.9 + depth * 1.55;
       coreContext.beginPath();
       coreContext.arc(x, y, size, 0, Math.PI * 2);
       coreContext.fillStyle = point.hot
@@ -228,27 +236,77 @@
       coreContext.ellipse(centerX, centerY + latitude * radius, radius * Math.sqrt(1 - latitude ** 2), radius * 0.13, 0, 0, Math.PI * 2);
       coreContext.stroke();
     });
+
+    coreContext.globalCompositeOperation = "screen";
+    for (let band = 0; band < 3; band += 1) {
+      const phase = rotation * (1.15 + band * 0.18) + band * 2.15;
+      const offset = Math.sin(phase) * radius * 0.34;
+      const energyGradient = coreContext.createLinearGradient(centerX - radius, centerY, centerX + radius, centerY);
+      energyGradient.addColorStop(0, "rgba(24, 108, 255, 0)");
+      energyGradient.addColorStop(0.42, `rgba(87, 226, 255, ${0.11 + band * 0.025})`);
+      energyGradient.addColorStop(0.64, band === 1 ? "rgba(255, 135, 48, 0.13)" : "rgba(137, 239, 255, 0.1)");
+      energyGradient.addColorStop(1, "rgba(24, 108, 255, 0)");
+      coreContext.beginPath();
+      coreContext.moveTo(centerX - radius, centerY + offset * 0.35);
+      coreContext.bezierCurveTo(
+        centerX - radius * 0.45,
+        centerY - radius * 0.65 + offset,
+        centerX + radius * 0.38,
+        centerY + radius * 0.7 - offset,
+        centerX + radius,
+        centerY - offset * 0.25,
+      );
+      coreContext.strokeStyle = energyGradient;
+      coreContext.lineWidth = 1.1 + band * 0.35;
+      coreContext.shadowBlur = 9;
+      coreContext.shadowColor = band === 1 ? "#ff7a1a" : "#42d9ff";
+      coreContext.stroke();
+    }
+
+    const specular = coreContext.createRadialGradient(
+      centerX - radius * 0.38,
+      centerY - radius * 0.42,
+      0,
+      centerX - radius * 0.32,
+      centerY - radius * 0.36,
+      radius * 0.58,
+    );
+    specular.addColorStop(0, "rgba(235, 254, 255, 0.34)");
+    specular.addColorStop(0.22, "rgba(97, 226, 255, 0.12)");
+    specular.addColorStop(1, "rgba(70, 205, 255, 0)");
+    coreContext.fillStyle = specular;
+    coreContext.fillRect(centerX - radius, centerY - radius, radius * 2, radius * 2);
+    coreContext.globalCompositeOperation = "source-over";
+    coreContext.shadowBlur = 0;
     coreContext.restore();
 
     coreContext.beginPath();
-    coreContext.arc(centerX, centerY, radius + 2, 0, Math.PI * 2);
-    coreContext.strokeStyle = "rgba(130, 236, 255, 0.68)";
-    coreContext.lineWidth = 1.2;
-    coreContext.shadowBlur = 16;
+    coreContext.arc(centerX, centerY, radius * pulse + 2, Math.PI * 0.56, Math.PI * 1.64);
+    const rim = coreContext.createLinearGradient(centerX - radius, centerY, centerX + radius, centerY);
+    rim.addColorStop(0, "rgba(78, 214, 255, 0.82)");
+    rim.addColorStop(0.55, "rgba(169, 239, 255, 0.24)");
+    rim.addColorStop(1, "rgba(255, 132, 43, 0.36)");
+    coreContext.strokeStyle = rim;
+    coreContext.lineWidth = 1.65;
+    coreContext.shadowBlur = 19;
     coreContext.shadowColor = "#42d9ff";
     coreContext.stroke();
     coreContext.shadowBlur = 0;
 
     for (let index = 0; index < 18; index += 1) {
       const angle = (index / 18) * Math.PI * 2 + rotation * (index % 2 ? 1 : -0.7);
-      const distance = radius * (1.2 + ((index * 17) % 10) / 22);
+      const distance = radius * (1.19 + ((index * 17) % 10) / 22);
       const x = centerX + Math.cos(angle) * distance;
       const y = centerY + Math.sin(angle) * distance * 0.56;
+      const particleSize = index % 7 === 0 ? 2.6 : 1.1;
       coreContext.beginPath();
-      coreContext.arc(x, y, index % 7 === 0 ? 2.6 : 1.1, 0, Math.PI * 2);
+      coreContext.arc(x, y, particleSize, 0, Math.PI * 2);
       coreContext.fillStyle = index % 7 === 0 ? "rgba(255, 122, 26, 0.95)" : "rgba(92, 224, 255, 0.7)";
+      coreContext.shadowBlur = index % 7 === 0 ? 13 : 6;
+      coreContext.shadowColor = index % 7 === 0 ? "#ff7a1a" : "#42d9ff";
       coreContext.fill();
     }
+    coreContext.shadowBlur = 0;
   }
 
   // Simulated telemetry chart.
@@ -357,7 +415,7 @@
   const simulationTime = document.querySelector("#simulation-time");
   function updateClock() {
     if (!simulationTime) return;
-    simulationTime.textContent = new Intl.DateTimeFormat("ar-SA", {
+    simulationTime.textContent = new Intl.DateTimeFormat("en-GB", {
       hour: "2-digit",
       minute: "2-digit",
       second: "2-digit",
