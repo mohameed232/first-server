@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="NEXUS CONTROL — A futuristic dashboard featuring simulated system metrics."
+    />
+    <meta name="theme-color" content="#050a12" />
+    <title>NEXUS CONTROL — Command Center</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    <canvas id="ambient-canvas" class="ambient-canvas" aria-hidden="true"></canvas>
+    <div class="noise" aria-hidden="true"></div>
+    <div class="scanline" aria-hidden="true"></div>
+
+    <header class="site-header" aria-label="Main header">
+      <a class="brand" href="#command" aria-label="NEXUS CONTROL — Home">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="brand-copy">
+          <strong>NEXUS CONTROL</strong>
+          <small>Integrated Command Core</small>
+        </span>
+      </a>
+
+      <nav class="main-nav" aria-label="Main navigation">
+        <a class="is-active" href="#command">Core</a>
+        <a href="#telemetry">Telemetry</a>
+        <a href="#protocol">Protocol</a>
+      </nav>
+
+      <div class="header-actions">
+        <span class="demo-chip"><i aria-hidden="true"></i> Demo Data</span>
+        <button id="motion-toggle" class="icon-button" type="button" aria-pressed="false">
+          <span class="motion-icon" aria-hidden="true"></span>
+          <span class="button-label">Pause Motion</span>
+        </button>
+      </div>
+    </header>
+
+    <main id="main-content">
+      <section id="command" class="hero-section observable" aria-labelledby="hero-title">
+        <div class="hero-intro">
+          <p class="eyebrow"><span>PHASE 01</span> / SIMULATION CHANNEL ACTIVE</p>
+          <h1 id="hero-title">Control begins at the <em>Core.</em></h1>
+          <p class="hero-copy">
+            A unified view of system activity expressed through light and motion. Move your pointer around the core,
+            or touch it to explore its interactive field.
+          </p>
+        </div>
+
+        <div class="command-stage" aria-label="Interactive visualization of simulated system status">
+          <div class="stage-grid" aria-hidden="true"></div>
+          <p class="coordinate coordinate-a" aria-hidden="true">NX–01 / 24.7136° N</p>
+          <p class="coordinate coordinate-b" aria-hidden="true">CORE.SIMULATION / ACTIVE</p>
+
+          <div class="metric-node metric-cpu">
+            <span class="metric-index">01</span>
+            <div>
+              <small>CPU</small>
+              <strong><b data-value="38">38</b><sup>%</sup></strong>
+            </div>
+            <span class="metric-line" aria-hidden="true"></span>
+          </div>
+
+          <div class="metric-node metric-memory">
+            <span class="metric-index">02</span>
+            <div>
+              <small>Memory</small>
+              <strong><b data-value="64">64</b><sup>%</sup></strong>
+            </div>
+            <span class="metric-line" aria-hidden="true"></span>
+          </div>
+
+          <div class="metric-node metric-storage">
+            <span class="metric-index">03</span>
+            <div>
+              <small>Storage</small>
+              <strong><b data-value="41">41</b><sup>%</sup></strong>
+            </div>
+            <span class="metric-line" aria-hidden="true"></span>
+          </div>
+
+          <div class="metric-node metric-status">
+            <span class="metric-index">04</span>
+            <div>
+              <small>Server Status</small>
+              <strong class="online-value">Stable</strong>
+            </div>
+            <span class="metric-line" aria-hidden="true"></span>
+          </div>
+
+          <div id="core-interaction" class="core-interaction">
+            <div class="core-glow" aria-hidden="true"></div>
+            <div class="orbit orbit-outer" aria-hidden="true">
+              <i></i><i></i><i></i>
+            </div>
+            <div class="orbit orbit-mid" aria-hidden="true"><i></i><i></i></div>
+            <div class="orbit orbit-inner" aria-hidden="true"><i></i></div>
+            <canvas id="core-canvas" width="620" height="620" aria-hidden="true"></canvas>
+            <div class="core-label">
+              <span>Core Energy</span>
+              <strong>92.4</strong>
+              <small>SIMULATED / SYNCED</small>
+            </div>
+          </div>
+
+          <div class="stage-status">
+            <span class="status-dot" aria-hidden="true"></span>
+            <p><small>Last simulated sync</small><strong id="simulation-time">Just now</strong></p>
+          </div>
+        </div>
+
+        <a class="scroll-cue" href="#telemetry">
+          <span>Follow the signal</span><i aria-hidden="true"></i>
+        </a>
+      </section>
+
+      <section id="telemetry" class="telemetry-section observable" aria-labelledby="telemetry-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow"><span>PHASE 02</span> / LIVE TELEMETRY</p>
+            <h2 id="telemetry-title">System rhythms,<br /><em>visualized.</em></h2>
+          </div>
+          <p>
+            A synthetic stream simulates CPU and memory activity over the last sixty seconds.
+            No real server data is accessed in this version.
+          </p>
+        </div>
+
+        <div class="signal-console">
+          <div class="signal-meta">
+            <div>
+              <span class="signal-swatch cpu-swatch"></span>
+              <small>CPU Signal</small>
+              <strong><b id="cpu-live">38</b>%</strong>
+            </div>
+            <div>
+              <span class="signal-swatch ram-swatch"></span>
+              <small>Memory Signal</small>
+              <strong><b id="ram-live">64</b>%</strong>
+            </div>
+            <p><span>60</span> seconds / demo stream</p>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="signal-chart" aria-label="Demo chart of CPU and memory activity"></canvas>
+            <div class="chart-axis" aria-hidden="true"><span>100</span><span>75</span><span>50</span><span>25</span><span>0</span></div>
+          </div>
+          <div class="console-ticker" aria-hidden="true">
+            <span>SIM/CORE: STABLE</span><span>PACKETS: 1,284</span><span>LATENCY: 18MS</span><span>UPLINK: NOMINAL</span>
+          </div>
+        </div>
+
+        <div class="system-radials" aria-label="Additional simulated indicators">
+          <article style="--value: 72; --delay: 0ms">
+            <div class="radial"><span>72<sup>%</sup></span></div>
+            <h3>Network Health</h3>
+            <p>Connection paths are operating within the simulated range.</p>
+          </article>
+          <article style="--value: 89; --delay: 120ms">
+            <div class="radial"><span>89<sup>%</sup></span></div>
+            <h3>Power Balance</h3>
+            <p>Simulated power distribution is stable across core units.</p>
+          </article>
+          <article style="--value: 96; --delay: 240ms">
+            <div class="radial"><span>96<sup>%</sup></span></div>
+            <h3>Signal Integrity</h3>
+            <p>No interruptions in the current demo scenario.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="protocol" class="protocol-section observable" aria-labelledby="protocol-title">
+        <div class="protocol-visual" aria-hidden="true">
+          <div class="protocol-core"><span></span></div>
+          <div class="protocol-beam"></div>
+          <b>NX</b>
+        </div>
+
+        <div class="protocol-content">
+          <p class="eyebrow"><span>PHASE 03</span> / SCOPE & SAFETY</p>
+          <h2 id="protocol-title">Secure protocol.<br /><em>Visibility without control.</em></h2>
+          <p class="protocol-lead">
+            This interface is a phase-one visual prototype showing simulated scenarios only.
+            It executes no commands and does not connect to real server metrics.
+          </p>
+
+          <ol class="protocol-list">
+            <li>
+              <span>01</span>
+              <div><h3>Local Simulation</h3><p>Values change locally in the browser for demonstration only.</p></div>
+              <i aria-hidden="true"></i>
+            </li>
+            <li>
+              <span>02</span>
+              <div><h3>No Privileges</h3><p>No login, secrets, or operational commands.</p></div>
+              <i aria-hidden="true"></i>
+            </li>
+            <li>
+              <span>03</span>
+              <div><h3>Ready to Expand</h3><p>A visual foundation for future phases after review.</p></div>
+              <i aria-hidden="true"></i>
+            </li>
+          </ol>
+
+          <a class="return-link" href="#command"><span>Return to Core</span><i aria-hidden="true">↗</i></a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p><strong>NEXUS CONTROL</strong> / PHASE 01</p>
+      <p>Exploratory interface — all displayed readings are simulated demo data.</p>
+      <p dir="ltr">© 2026 / SYSTEM VISION</p>
+    </footer>
+  </body>
+</html>
