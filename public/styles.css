@@ -641,6 +641,17 @@ h2 em {
   font-size: 1.3rem !important;
 }
 
+.metric-node .metric-detail {
+  margin-top: 0.3rem;
+  font-size: 0.62rem;
+  font-family: var(--font-mono);
+}
+
+body[data-monitor-state="offline"] .online-value { color: var(--orange); }
+body[data-monitor-state="live"] .demo-chip { color: #8affcf; border-color: #8affcf55; }
+body[data-monitor-state="live"] .demo-chip i,
+body[data-monitor-state="live"] .status-dot { background: #8affcf; box-shadow: 0 0 12px #8affcf66; }
+
 .stage-status {
   position: absolute;
   z-index: 5;
@@ -779,6 +790,7 @@ h2 em {
 }
 
 .console-ticker {
+  flex-wrap: wrap;
   display: flex;
   justify-content: space-between;
   gap: 1rem;
@@ -789,7 +801,7 @@ h2 em {
   font-family: var(--font-mono);
   font-size: 0.56rem;
   letter-spacing: 0.08em;
-  white-space: nowrap;
+  white-space: normal;
 }
 
 .system-radials {
@@ -1015,10 +1027,11 @@ h2 em {
   :root { --header-height: 82px; }
   .brand-copy small,
   .button-label { display: none; }
-  .site-header { grid-template-columns: 1fr auto; }
+  /* A filtered header traps fixed navigation over the LIVE/OFFLINE badge. */
+  .site-header { grid-template-columns: 1fr auto; backdrop-filter: none; }
   .main-nav { position: fixed; inset: auto 1rem 1rem; z-index: 40; height: 58px; justify-content: space-around; border: 1px solid var(--line); background: rgba(5, 11, 19, 0.88); backdrop-filter: blur(16px); }
   .main-nav a { padding-inline: 1.5rem; }
-  .header-actions { display: none; }
+  .header-actions .icon-button { display: none; }
   .command-stage { margin-block-start: 0; }
   .core-interaction { width: min(62vw, 580px); }
   .metric-cpu { inset-inline-start: 1%; }

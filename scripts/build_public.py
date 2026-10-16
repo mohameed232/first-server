@@ -24,7 +24,7 @@ def main() -> int:
 
     page = INDEX.read_text(encoding="utf-8")
     css = (PUBLIC / "styles.css").read_text(encoding="utf-8")
-    js = (PUBLIC / "app.js").read_text(encoding="utf-8")
+    js = "\n".join((PUBLIC / name).read_text(encoding="utf-8") for name in ("monitoring.js", "app.js"))
     if "</style" in css.lower() or "</script" in js.lower():
         raise ValueError("An asset contains an HTML closing tag and cannot be embedded")
 

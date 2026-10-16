@@ -309,17 +309,14 @@
     coreContext.shadowBlur = 0;
   }
 
-  // Simulated telemetry chart.
+  // Real telemetry only. Decorative orb/particles are independent of monitoring.
   const chartCanvas = document.querySelector("#signal-chart");
   const chartContext = chartCanvas?.getContext("2d");
   const cpuValue = document.querySelector("#cpu-live");
   const ramValue = document.querySelector("#ram-live");
-  const cpuMetric = document.querySelector('[data-value="38"]');
-  const ramMetric = document.querySelector('[data-value="64"]');
-  const data = {
-    cpu: Array.from({ length: 60 }, (_, index) => 34 + Math.sin(index * 0.42) * 9 + Math.random() * 7),
-    ram: Array.from({ length: 60 }, (_, index) => 61 + Math.sin(index * 0.18 + 1.3) * 5 + Math.random() * 3),
-  };
+  const cpuMetric = document.querySelector('#cpu-metric');
+  const ramMetric = document.querySelector('#ram-metric');
+  const data = { cpu: [], ram: [] };
   let chartWidth = 0;
   let chartHeight = 0;
   let chartDpr = 1;
@@ -341,7 +338,7 @@
     const usableWidth = chartWidth - padding * 2;
     const usableHeight = chartHeight - padding * 2;
     const points = values.map((value, index) => ({
-      x: padding + (index / (values.length - 1)) * usableWidth,
+      x: padding + ((60 - values.length + index) / 59) * usableWidth,
       y: padding + (1 - value / 100) * usableHeight,
     }));
     const path = new Path2D();
@@ -356,7 +353,7 @@
   }
 
   function drawSeries(values, color, glow, fill) {
-    if (!chartContext) return;
+    if (!chartContext || !values.length) return;
     const { path, points } = linePath(values);
     chartContext.save();
     chartContext.strokeStyle = color;
@@ -391,39 +388,53 @@
     drawSeries(data.cpu, "rgba(89, 222, 255, 0.95)", "#42d9ff", "rgba(66, 217, 255, 0.085)");
   }
 
-  function tickSimulation() {
-    if (userPaused || document.hidden) return;
-    const previousCpu = data.cpu.at(-1);
-    const previousRam = data.ram.at(-1);
-    const nextCpu = Math.max(18, Math.min(78, previousCpu + (Math.random() - 0.48) * 9));
-    const nextRam = Math.max(46, Math.min(82, previousRam + (Math.random() - 0.5) * 3.5));
-    data.cpu.push(nextCpu);
-    data.cpu.shift();
-    data.ram.push(nextRam);
-    data.ram.shift();
-    const cpuRounded = Math.round(nextCpu);
-    const ramRounded = Math.round(nextRam);
-    if (cpuValue) cpuValue.textContent = cpuRounded;
-    if (ramValue) ramValue.textContent = ramRounded;
-    if (cpuMetric) cpuMetric.textContent = cpuRounded;
-    if (ramMetric) ramMetric.textContent = ramRounded;
-    drawChart();
+  function setText(selector, value) {
+    const element = document.querySelector(selector);
+    if (element) element.textContent = value;
   }
 
-  setInterval(tickSimulation, 1400);
-
-  const simulationTime = document.querySelector("#simulation-time");
-  function updateClock() {
-    if (!simulationTime) return;
-    simulationTime.textContent = new Intl.DateTimeFormat("en-GB", {
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-      hour12: false,
-    }).format(new Date());
+  function capacityText(value) {
+    const gib = (bytes) => (bytes / 1024 ** 3).toFixed(1);
+    return `${gib(value.used_bytes)} / ${gib(value.total_bytes)} GiB`;
   }
-  updateClock();
-  setInterval(updateClock, 1000);
+
+  const monitor = NexusMonitoring.createMonitor({
+    onData(metrics) {
+      const cpu = metrics.cpu_percent.toFixed(1);
+      const ram = metrics.memory.percent.toFixed(1);
+      if (cpuValue) cpuValue.textContent = cpu;
+      if (cpuMetric) cpuMetric.textContent = cpu;
+      if (ramValue) ramValue.textContent = ram;
+      if (ramMetric) ramMetric.textContent = ram;
+      setText('#disk-metric', metrics.disk.percent.toFixed(1));
+      setText('#memory-capacity', capacityText(metrics.memory));
+      setText('#disk-capacity', capacityText(metrics.disk));
+      const seconds = Math.floor(metrics.uptime_seconds);
+      setText('#server-uptime', `${Math.floor(seconds / 86400)}d ${Math.floor(seconds % 86400 / 3600)}h ${Math.floor(seconds % 3600 / 60)}m`);
+      setText('#server-time', new Date(metrics.timestamp).toISOString().slice(11, 19) + ' UTC');
+      data.cpu.push(metrics.cpu_percent);
+      data.ram.push(metrics.memory.percent);
+      if (data.cpu.length > 60) { data.cpu.shift(); data.ram.shift(); }
+      drawChart();
+    },
+    onState(status) {
+      body.dataset.monitorState = status;
+      setText('#monitor-status', status.toUpperCase());
+      setText('#server-status', status.toUpperCase());
+      setText('#monitor-message', status === 'live' ? 'Read-only server metrics' : 'Metrics unavailable — no simulated readings');
+      chartCanvas?.setAttribute('aria-label', status === 'live'
+        ? 'Live CPU and memory usage, up to 60 samples at approximately five-second intervals'
+        : 'CPU and memory chart unavailable');
+      if (status !== 'live') {
+        ['#cpu-live', '#ram-live', '#cpu-metric', '#ram-metric', '#disk-metric', '#server-uptime', '#server-time']
+          .forEach((selector) => setText(selector, '--'));
+        ['#memory-capacity', '#disk-capacity'].forEach((selector) => setText(selector, 'Unavailable'));
+        data.cpu.length = 0;
+        data.ram.length = 0;
+        drawChart();
+      }
+    },
+  });
 
   const sections = [...document.querySelectorAll(".observable")];
   const navLinks = [...document.querySelectorAll(".main-nav a")];
@@ -462,4 +473,7 @@
   resizeAmbient();
   resizeChart();
   requestAnimationFrame(renderFrame);
+  monitor.start();
+  window.addEventListener('pagehide', () => monitor.stop());
+  window.addEventListener('pageshow', () => monitor.start());
 })();

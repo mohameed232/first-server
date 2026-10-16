@@ -33,7 +33,9 @@ def test_public_interface_assets_are_present():
     index = (PUBLIC_DIR / "index.html").read_text(encoding="utf-8")
 
     assert '<html lang="en" dir="ltr">' in index
-    assert "Demo Data" in index
+    assert 'id="monitor-status">OFFLINE' in index
+    assert "DEMO VISUAL / NOT A METRIC" in index
+    assert (PUBLIC_DIR / "monitoring.js").is_file()
     assert (PUBLIC_DIR / "styles.css").is_file()
     assert (PUBLIC_DIR / "app.js").is_file()
     assert '<link rel="stylesheet"' not in index
