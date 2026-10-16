@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="NEXUS CONTROL — تجربة بصرية مستقبلية لاستكشاف حالة الأنظمة ببيانات تجريبية."
+    />
+    <meta name="theme-color" content="#050a12" />
+    <title>NEXUS CONTROL — مركز القيادة</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">انتقل إلى المحتوى</a>
+    <canvas id="ambient-canvas" class="ambient-canvas" aria-hidden="true"></canvas>
+    <div class="noise" aria-hidden="true"></div>
+    <div class="scanline" aria-hidden="true"></div>
+
+    <header class="site-header" aria-label="الترويسة الرئيسية">
+      <a class="brand" href="#command" aria-label="NEXUS CONTROL — الرئيسية">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="brand-copy">
+          <strong>NEXUS CONTROL</strong>
+          <small>نواة القيادة المتكاملة</small>
+        </span>
+      </a>
+
+      <nav class="main-nav" aria-label="التنقل الرئيسي">
+        <a class="is-active" href="#command">النواة</a>
+        <a href="#telemetry">النبضات</a>
+        <a href="#protocol">البروتوكول</a>
+      </nav>
+
+      <div class="header-actions">
+        <span class="demo-chip"><i aria-hidden="true"></i> بيانات تجريبية</span>
+        <button id="motion-toggle" class="icon-button" type="button" aria-pressed="false">
+          <span class="motion-icon" aria-hidden="true"></span>
+          <span class="button-label">إيقاف الحركة</span>
+        </button>
+      </div>
+    </header>
+
+    <main id="main-content">
+      <section id="command" class="hero-section observable" aria-labelledby="hero-title">
+        <div class="hero-intro">
+          <p class="eyebrow"><span>المرحلة 01</span> / قناة المحاكاة النشطة</p>
+          <h1 id="hero-title">السيطرة تبدأ من <em>النواة.</em></h1>
+          <p class="hero-copy">
+            مشهد موحّد يترجم إيقاع النظام إلى ضوء وحركة. حرّك المؤشر حول النواة،
+            أو المسها، لاستكشاف مجالها التفاعلي.
+          </p>
+        </div>
+
+        <div class="command-stage" aria-label="تصور تفاعلي لحالة الأنظمة التجريبية">
+          <div class="stage-grid" aria-hidden="true"></div>
+          <p class="coordinate coordinate-a" aria-hidden="true">NX–01 / 24.7136° N</p>
+          <p class="coordinate coordinate-b" aria-hidden="true">CORE.SIMULATION / ACTIVE</p>
+
+          <div class="metric-node metric-cpu">
+            <span class="metric-index">01</span>
+            <div>
+              <small>المعالج</small>
+              <strong><b data-value="38">38</b><sup>%</sup></strong>
+            </div>
+            <span class="metric-line" aria-hidden="true"></span>
+          </div>
+
+          <div class="metric-node metric-memory">
+            <span class="metric-index">02</span>
+            <div>
+              <small>الذاكرة</small>
+              <strong><b data-value="64">64</b><sup>%</sup></strong>
+            </div>
+            <span class="metric-line" aria-hidden="true"></span>
+          </div>
+
+          <div class="metric-node metric-storage">
+            <span class="metric-index">03</span>
+            <div>
+              <small>التخزين</small>
+              <strong><b data-value="41">41</b><sup>%</sup></strong>
+            </div>
+            <span class="metric-line" aria-hidden="true"></span>
+          </div>
+
+          <div class="metric-node metric-status">
+            <span class="metric-index">04</span>
+            <div>
+              <small>حالة الخادم</small>
+              <strong class="online-value">مستقر</strong>
+            </div>
+            <span class="metric-line" aria-hidden="true"></span>
+          </div>
+
+          <div id="core-interaction" class="core-interaction">
+            <div class="core-glow" aria-hidden="true"></div>
+            <div class="orbit orbit-outer" aria-hidden="true">
+              <i></i><i></i><i></i>
+            </div>
+            <div class="orbit orbit-mid" aria-hidden="true"><i></i><i></i></div>
+            <div class="orbit orbit-inner" aria-hidden="true"><i></i></div>
+            <canvas id="core-canvas" width="620" height="620" aria-hidden="true"></canvas>
+            <div class="core-label">
+              <span>طاقة النواة</span>
+              <strong>92.4</strong>
+              <small>محاكاة / متزامنة</small>
+            </div>
+          </div>
+
+          <div class="stage-status">
+            <span class="status-dot" aria-hidden="true"></span>
+            <p><small>آخر مزامنة تجريبية</small><strong id="simulation-time">الآن</strong></p>
+          </div>
+        </div>
+
+        <a class="scroll-cue" href="#telemetry">
+          <span>تابع الإشارة</span><i aria-hidden="true"></i>
+        </a>
+      </section>
+
+      <section id="telemetry" class="telemetry-section observable" aria-labelledby="telemetry-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow"><span>المرحلة 02</span> / القياس اللحظي</p>
+            <h2 id="telemetry-title">إيقاع النظام،<br /><em>مرئيًّا.</em></h2>
+          </div>
+          <p>
+            تدفق اصطناعي يحاكي نشاط المعالج والذاكرة خلال آخر ستين ثانية.
+            لا تُقرأ أي بيانات من الخادم في هذه النسخة.
+          </p>
+        </div>
+
+        <div class="signal-console">
+          <div class="signal-meta">
+            <div>
+              <span class="signal-swatch cpu-swatch"></span>
+              <small>إشارة المعالج</small>
+              <strong><b id="cpu-live">38</b>%</strong>
+            </div>
+            <div>
+              <span class="signal-swatch ram-swatch"></span>
+              <small>إشارة الذاكرة</small>
+              <strong><b id="ram-live">64</b>%</strong>
+            </div>
+            <p><span>60</span> ثانية / بث تجريبي</p>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="signal-chart" aria-label="رسم بياني تجريبي لنشاط المعالج والذاكرة"></canvas>
+            <div class="chart-axis" aria-hidden="true"><span>100</span><span>75</span><span>50</span><span>25</span><span>0</span></div>
+          </div>
+          <div class="console-ticker" aria-hidden="true">
+            <span>SIM/CORE: STABLE</span><span>PACKETS: 1,284</span><span>LATENCY: 18MS</span><span>UPLINK: NOMINAL</span>
+          </div>
+        </div>
+
+        <div class="system-radials" aria-label="مؤشرات إضافية تجريبية">
+          <article style="--value: 72; --delay: 0ms">
+            <div class="radial"><span>72<sup>%</sup></span></div>
+            <h3>سلامة الشبكة</h3>
+            <p>مسارات الاتصال تعمل ضمن النطاق المحاكى.</p>
+          </article>
+          <article style="--value: 89; --delay: 120ms">
+            <div class="radial"><span>89<sup>%</sup></span></div>
+            <h3>اتزان الطاقة</h3>
+            <p>التوزيع الافتراضي مستقر عبر وحدات النواة.</p>
+          </article>
+          <article style="--value: 96; --delay: 240ms">
+            <div class="radial"><span>96<sup>%</sup></span></div>
+            <h3>تكامل الإشارة</h3>
+            <p>لا توجد انقطاعات ضمن سيناريو العرض الحالي.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="protocol" class="protocol-section observable" aria-labelledby="protocol-title">
+        <div class="protocol-visual" aria-hidden="true">
+          <div class="protocol-core"><span></span></div>
+          <div class="protocol-beam"></div>
+          <b>NX</b>
+        </div>
+
+        <div class="protocol-content">
+          <p class="eyebrow"><span>المرحلة 03</span> / حدود المهمة</p>
+          <h2 id="protocol-title">بروتوكول آمن.<br /><em>رؤية بلا تحكّم.</em></h2>
+          <p class="protocol-lead">
+            هذه الواجهة نموذج بصري للمرحلة الأولى. إنها تعرض سيناريوهات مصطنعة فقط،
+            ولا تنفّذ أوامر ولا تتصل بمقاييس الخادم الفعلية.
+          </p>
+
+          <ol class="protocol-list">
+            <li>
+              <span>01</span>
+              <div><h3>محاكاة محلية</h3><p>القيم تتغيّر داخل المتصفح لأغراض العرض فقط.</p></div>
+              <i aria-hidden="true"></i>
+            </li>
+            <li>
+              <span>02</span>
+              <div><h3>بدون صلاحيات</h3><p>لا تسجيل دخول، لا أسرار، ولا أوامر تشغيلية.</p></div>
+              <i aria-hidden="true"></i>
+            </li>
+            <li>
+              <span>03</span>
+              <div><h3>جاهز للتوسّع</h3><p>أساس مرئي واضح للمراحل القادمة بعد المراجعة.</p></div>
+              <i aria-hidden="true"></i>
+            </li>
+          </ol>
+
+          <a class="return-link" href="#command"><span>العودة إلى النواة</span><i aria-hidden="true">↗</i></a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p><strong>NEXUS CONTROL</strong> / PHASE 01</p>
+      <p>واجهة استكشافية — جميع القراءات المعروضة بيانات تجريبية.</p>
+      <p dir="ltr">© 2026 / SYSTEM VISION</p>
+    </footer>
+  </body>
+</html>
