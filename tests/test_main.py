@@ -1,4 +1,6 @@
 from pathlib import Path
+import subprocess
+import sys
 
 from fastapi.routing import APIRoute
 
@@ -34,3 +36,18 @@ def test_public_interface_assets_are_present():
     assert "Demo Data" in index
     assert (PUBLIC_DIR / "styles.css").is_file()
     assert (PUBLIC_DIR / "app.js").is_file()
+    assert '<link rel="stylesheet"' not in index
+    assert '<script src=' not in index
+    assert index.index("/* NEXUS_CSS_START */") < index.index("</head>")
+    assert index.index("</main>") < index.index("// NEXUS_JS_START") < index.index("</body>")
+
+
+def test_embedded_assets_match_sources():
+    check = subprocess.run(
+        [sys.executable, "scripts/build_public.py", "--check"],
+        cwd=PUBLIC_DIR.parent,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert check.returncode == 0, check.stderr
