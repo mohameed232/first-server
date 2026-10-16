@@ -24,7 +24,7 @@
   function updateMotionUi() {
     body.classList.toggle("motion-paused", userPaused);
     motionToggle?.setAttribute("aria-pressed", String(userPaused));
-    if (motionLabel) motionLabel.textContent = userPaused ? "تشغيل الحركة" : "إيقاف الحركة";
+    if (motionLabel) motionLabel.textContent = userPaused ? "Resume Motion" : "Pause Motion";
   }
 
   motionToggle?.addEventListener("click", () => {
@@ -61,7 +61,7 @@
     if (touch) setPointer(touch.clientX, touch.clientY);
   }, { passive: true });
 
-  // خلفية خفيفة: نقاط ومسارات بيانات مولّدة محليًا.
+  // Lightweight background: locally generated particles and data trails.
   const ambientCanvas = document.querySelector("#ambient-canvas");
   const ambientContext = ambientCanvas?.getContext("2d");
   let ambientWidth = 0;
@@ -127,7 +127,7 @@
     });
   }
 
-  // كرة نقطية ثلاثية الأبعاد بلا مكتبات خارجية.
+  // 3D point sphere without external libraries.
   const coreCanvas = document.querySelector("#core-canvas");
   const coreContext = coreCanvas?.getContext("2d");
   const spherePoints = [];
@@ -251,7 +251,7 @@
     }
   }
 
-  // مخطط القياس التجريبي.
+  // Simulated telemetry chart.
   const chartCanvas = document.querySelector("#signal-chart");
   const chartContext = chartCanvas?.getContext("2d");
   const cpuValue = document.querySelector("#cpu-live");
